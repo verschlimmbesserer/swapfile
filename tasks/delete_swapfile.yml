@@ -1,0 +1,24 @@
+---
+- name: Delete swap from fstab
+  ansible.builtin.lineinfile:
+    dest: /etc/fstab
+    line: "{{ swapfile }} none swap defaults 0 0"
+    state: absent
+
+- name: Do some magic
+  ansible.builtin.shell: echo "3" > /proc/sys/vm/drop_caches
+  register: drop_caches
+  changed_when: drop_caches.rc != 0
+
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  register: swap_command
+  changed_when: swap_command.rc != 0
+
+- name: Delete swapfile
+  ansible.builtin.file:
+    path: "{{ swapfile }}"
+    owner: root
+    group: root
+    mode: "0600"
+    state: absent

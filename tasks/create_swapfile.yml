@@ -1,0 +1,23 @@
+---
+
+- name: Allocate space for swap
+  ansible.builtin.command: fallocate -l {{ swapsize }}M {{ swapfile }}
+
+- name: Set permissions
+  ansible.builtin.file:
+    path: {{ swapfile }}
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Create swap file
+  ansible.builtin.command: mkswap {{ swapfile }}
+
+- name: Activate swap
+  ansible.builtin.command: swapon {{ swapfile }}
+
+- name: Add swap to fstab
+  ansible.builtin.lineinfile:
+    dest: /etc/fstab
+    line: "{{ swapfile }} none swap defaults 0 0"
+    state: present

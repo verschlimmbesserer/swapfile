@@ -1,0 +1,26 @@
+---
+
+- name: Set swap size in Bytes
+  ansible.builtin.set_fact:
+    swapsize_bit: {{ swapsize * 1024 * 1024 }}
+# tasks file for swapfile
+- name: Check if swap file exists
+  ansible.builtin.stat:
+    path: "{{ swapfile }}"
+  register: st
+
+- name: Check if swap file has the right size
+  ansible.builtin.shell:
+    cmd: stat -c %s {{ swapfile }}
+    executable: /bin/bash
+  when: st.stat.exists
+  changed_when: size.rc != 0
+  register: size
+
+- name: If swap file has wrong size, delete it
+  ansible.builtin.include_tasks: delete_swap.yml
+  when: st.stat.exists and size.stdout|int != swapsize_bit
+
+- name: If no swap file exsists, create one
+  ansible.builtin.include_tasks: create_swap.yml
+  when: not st.stat.exists or size.stdout|int !=  swapsize_bit

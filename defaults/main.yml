@@ -1,0 +1,4 @@
+---
+# defaults file for swapfile
+swapfile_size: 4096
+swapfile_path: /swapfile
